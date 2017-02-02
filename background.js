@@ -28,31 +28,31 @@ function onCompleted(details) {
 }
 
 function removeDuplicates(tab, duplicates) {
-    var tab_or_tabs = duplicates.length > 1 ? "tabs" : "tab",
-        title = "Found " + duplicates.length + " duplicate " + tab_or_tabs + ".",
-        message = "" + duplicates.length + " " + tab_or_tabs + " containing " + abbreviatedUrl(tab) + " will be closed.",
-        options = {
-            type: 'basic',
-            iconUrl: 'icon48.png',
-            title: title,
-            message: message,
-            isClickable: true,
-            buttons: [{title: 'Cancel'}]
-        },
-        notificationId = null,
-        removeTabs = function() {
-            chrome.tabs.get(tab.id, function(t) {
-                // only close tabs if triggering tab still open
-                if (typeof t == 'undefined')  return null;
+    var tab_or_tabs = duplicates.length > 1 ? "tabs" : "tab";
+    var title = "Found " + duplicates.length + " duplicate " + tab_or_tabs + ".";
+    var message = "" + duplicates.length + " " + tab_or_tabs + " containing " + abbreviatedUrl(tab) + " will be closed.";
+    var options = {
+        type: 'basic',
+        iconUrl: 'icon48.png',
+        title: title,
+        message: message,
+        isClickable: true,
+        buttons: [{title: 'Cancel'}]
+    };
+    var notificationId = null;
+    var removeTabs = function() {
+        chrome.tabs.get(tab.id, function(t) {
+            // only close tabs if triggering tab still open
+            if (typeof t == 'undefined') return null;
 
-                // remove individual tabs because passing array that includes closed tabs fails silently
-                duplicates.forEach(function(duplicate) {
-                    chrome.tabs.remove(duplicate.id);
-                });
+            // remove individual tabs because passing array that includes closed tabs fails silently
+            duplicates.forEach(function(duplicate) {
+                chrome.tabs.remove(duplicate.id);
             });
-            chrome.notifications.clear(notificationId, function(){});
-        },
-        removeTabsTimer = window.setTimeout(removeTabs.bind(this), delay);
+        });
+        chrome.notifications.clear(notificationId, function(){});
+    };
+    var removeTabsTimer = window.setTimeout(removeTabs.bind(this), delay);
 
     chrome.notifications.create('', options, function(nId) {
         notificationId = nId;
